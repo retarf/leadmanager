@@ -1,0 +1,43 @@
+version: '3'
+
+
+services:
+    web:
+        depends_on: 
+            - db
+        build: ./image
+        volumes: 
+            - ./django:/code
+        ports:
+            - "80:8000"
+        command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+        deploy:
+            restart_policy:
+                condition: on-failure
+            placement:
+                constraints:
+                    - node.hostname == draco
+    db:
+        image: postgres
+        environment:
+            POSTGRES_USER: admin
+            POSTGRES_PASSWORD: mypass
+            POSTGRES_DB: react
+        volumes:
+            - react_volume:/var/lib/postgresql/data
+        deploy:
+            placement:
+                constraints:
+                    - node.hostname == pentagon
+                      # nodejs:
+                      #     image: "node:10"
+                      #     user: "node"
+                      #     working_dir: /home/node/app
+                      #     volumes:
+                      #       - ./node:/home/node/app
+                      #     ports:
+                      #       - "3000:3000"
+                      #     command: "npm start"
+
+volumes:
+    react_volume:
